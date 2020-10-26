@@ -1,0 +1,27 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+Vagrant.configure("2") do |config|
+  config.vm.box = "ubuntu/trusty64"
+  config.vm.synced_folder "shared/", "/home/vagrant/shared"
+  config.vm.provider "virtualbox" do |vb|
+    vb.gui = true
+    vb.memory = "4096"
+    vb.cpus = "4"
+  end
+  config.vm.provision "shell", inline: <<-SHELL
+    sudo apt update
+    sudo apt install -y openssh-server
+    sudo apt install -y curl apt-transport-https ca-certificates software-properties-common
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu  stable"
+    sudo apt update
+    sudo apt install -y docker-ce
+    sudo apt install -y docker-compose
+    sudo usermod -aG docker vagrant
+    sudo hostname vagrant
+    sudo cp /etc/hostname /etc/hostname.bk
+    sudo sed -i 's/vagrant-ubuntu-trusty-64/vagrant/' /etc/hostname
+    sudo cp /etc/hosts /etc/hosts.bk
+    sudo sed -i 's/localhost/vagrant/' /etc/hosts
+  SHELL
+end
